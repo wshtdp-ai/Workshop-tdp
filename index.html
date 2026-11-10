@@ -73,7 +73,10 @@ async function showPage(name){
    page.innerHTML='<h3>Master Unit</h3><p>Admin dapat melihat data unit. Penambahan dan perubahan unit dilakukan oleh Kepala Workshop.</p><div id="vehicleRows" class="muted">Memuat data...</div>';
    const {data,error}=await supabase.from('vehicles').select('*').limit(100);
    if(error){$('vehicleRows').textContent='Data belum dapat dimuat: '+error.message;return}
-   $('vehicleRows').innerHTML=data.length?'<pre>'+JSON.stringify(data,null,2).replaceAll('<','&lt;')+'</pre>':'Belum ada data unit.';
+   if(!data.length){$('vehicleRows').textContent='Belum ada data unit.';return;}
+   const esc=v=>String(v??'-').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+   const rows=data.map((v,i)=>`<tr><td>${i+1}</td><td>${esc(v.plate_number)}</td><td>${esc(v.brand)}</td><td>${esc(v.vehicle_type)}</td><td>${esc(v.model)}</td><td>${esc(v.year)}</td><td>${esc(v.status)}</td></tr>`).join('');
+   $('vehicleRows').innerHTML=`<p class="muted">Jumlah unit terbaca: ${data.length}</p><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="background:#eaf0f7;text-align:left"><th style="padding:10px">No.</th><th style="padding:10px">Nomor Polisi</th><th style="padding:10px">Merek</th><th style="padding:10px">Jenis</th><th style="padding:10px">Model</th><th style="padding:10px">Tahun</th><th style="padding:10px">Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
    return;
  }
  const table=name==='spk'?'work_orders':'pm_records';
